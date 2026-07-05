@@ -120,6 +120,12 @@ export default function Landing() {
             <span className="font-bold tracking-tight">TallerControl</span>
           </div>
           <div className="flex items-center gap-2">
+            <a href="#contacto" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block px-2">
+              Contacto
+            </a>
+            <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block px-2">
+              Precios
+            </a>
             <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
               Iniciar sesión
             </Button>
@@ -327,6 +333,40 @@ export default function Landing() {
           <p className="text-sm text-muted-foreground">
             — Carlos M., Taller Mecánico AutoSur, Sevilla
           </p>
+        </div>
+      </section>
+
+      {/* Contacto */}
+      <section className="border-t border-border/30" id="contacto">
+        <div className="max-w-2xl mx-auto px-6 py-20 text-center">
+          <h2 className="text-3xl font-bold mb-3">¿Tienes alguna pregunta?</h2>
+          <p className="text-muted-foreground mb-8">
+            Estamos aquí para ayudarte. Escríbenos y te respondemos en menos de 24 horas.
+          </p>
+          <div className="border border-border/40 rounded-2xl bg-card p-8 text-left space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
+                <Wrench className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Soporte técnico y ventas</p>
+                <a href="mailto:marchandoruta@gmail.com" className="text-sm text-primary hover:underline">
+                  marchandoruta@gmail.com
+                </a>
+              </div>
+            </div>
+            <div className="border-t border-border/30 pt-4 text-sm text-muted-foreground space-y-1">
+              <p>· Respuesta en menos de 24 horas en días laborables</p>
+              <p>· Soporte en español</p>
+              <p>· Ayuda con la configuración inicial incluida</p>
+            </div>
+            <a
+              href="mailto:marchandoruta@gmail.com"
+              className="block w-full text-center bg-primary text-primary-foreground rounded-lg py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              Enviar mensaje
+            </a>
+          </div>
         </div>
       </section>
 
