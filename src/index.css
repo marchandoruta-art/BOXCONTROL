@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* === Mechanic Dark Theme (default) === */
+    --background: 220 13% 8%;
+    --foreground: 210 20% 94%;
+    --card: 220 13% 11%;
+    --card-foreground: 210 20% 94%;
+    --popover: 220 13% 11%;
+    --popover-foreground: 210 20% 94%;
+
+    /* Primary: naranja taller / workshop fire */
+    --primary: 25 95% 55%;
+    --primary-foreground: 220 13% 8%;
+
+    --secondary: 220 13% 16%;
+    --secondary-foreground: 210 20% 90%;
+    --muted: 220 13% 16%;
+    --muted-foreground: 215 15% 55%;
+    --accent: 214 80% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 18%;
+    --input: 220 13% 18%;
+    --ring: 25 95% 55%;
+    --radius: 0.5rem;
+
+    /* Status colors - bright on dark bg */
+    --status-received:   215 60% 62%;
+    --status-to-quote:   25 95% 60%;
+    --status-quoted:     190 85% 50%;
+    --status-in-progress: 35 92% 55%;
+    --status-pending-parts: 0 72% 60%;
+    --status-quality:    280 65% 65%;
+    --status-completed:  142 68% 48%;
+    --status-invoiced:   270 60% 55%;
+    --status-delivered:  215 80% 55%;
+  }
+
+  /* Light mode override (for those who prefer it) */
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 25 95% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 25 95% 50%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+@layer components {
+  /* Status badges */
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .status-received      { background-color: hsl(var(--status-received) / 0.15); color: hsl(var(--status-received)); border: 1px solid hsl(var(--status-received) / 0.3); }
+  .status-to-quote      { background-color: hsl(var(--status-to-quote) / 0.15); color: hsl(var(--status-to-quote)); border: 1px solid hsl(var(--status-to-quote) / 0.3); }
+  .status-quoted        { background-color: hsl(var(--status-quoted) / 0.15); color: hsl(var(--status-quoted)); border: 1px solid hsl(var(--status-quoted) / 0.3); }
+  .status-in-progress   { background-color: hsl(var(--status-in-progress) / 0.15); color: hsl(var(--status-in-progress)); border: 1px solid hsl(var(--status-in-progress) / 0.3); }
+  .status-pending-parts { background-color: hsl(var(--status-pending-parts) / 0.15); color: hsl(var(--status-pending-parts)); border: 1px solid hsl(var(--status-pending-parts) / 0.3); }
+  .status-quality       { background-color: hsl(var(--status-quality) / 0.15); color: hsl(var(--status-quality)); border: 1px solid hsl(var(--status-quality) / 0.3); }
+  .status-completed     { background-color: hsl(var(--status-completed) / 0.15); color: hsl(var(--status-completed)); border: 1px solid hsl(var(--status-completed) / 0.3); }
+  .status-invoiced      { background-color: hsl(var(--status-invoiced) / 0.15); color: hsl(var(--status-invoiced)); border: 1px solid hsl(var(--status-invoiced) / 0.3); }
+  .status-delivered     { background-color: hsl(var(--status-delivered) / 0.15); color: hsl(var(--status-delivered)); border: 1px solid hsl(var(--status-delivered) / 0.3); }
+
+  /* Priority stripes for kanban cards */
+  .priority-bar-baja    { border-left: 3px solid hsl(215 60% 62%); }
+  .priority-bar-normal  { border-left: 3px solid hsl(215 15% 45%); }
+  .priority-bar-alta    { border-left: 3px solid hsl(35 92% 55%); }
+  .priority-bar-urgente { border-left: 3px solid hsl(0 72% 60%); }
+
+  /* Glass card effect for KPI widgets */
+  .kpi-card {
+    @apply rounded-lg border bg-card p-4;
+    background: linear-gradient(135deg, hsl(var(--card)), hsl(220 13% 14%));
+  }
+
+  /* Mechanic grid pattern for hero backgrounds */
+  .grid-pattern {
+    background-image:
+      linear-gradient(hsl(var(--border)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+}
