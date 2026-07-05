@@ -19,7 +19,6 @@ import {
   Loader2,
   Clock,
   Car,
-  User,
   CheckCircle2,
   XCircle,
   Calendar,
