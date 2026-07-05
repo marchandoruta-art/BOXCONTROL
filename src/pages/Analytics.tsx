@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AppShell } from '@/components/layout/AppShell';
 import { SubscriptionBanner } from '@/components/layout/SubscriptionBanner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Car, Clock, Users, TrendingUp } from 'lucide-react';
+import { Loader2, Car, Clock, Users, TrendingUp, Download } from 'lucide-react';
 import { type VehicleStatus, STATUS_LABELS } from '@/lib/types';
 
 interface MechanicStat {
@@ -112,12 +112,40 @@ export default function Analytics() {
 
   const maxMinutes = Math.max(...mechanicStats.map((s) => s.total_minutes), 1);
 
+  const exportCSV = () => {
+    const rows = [
+      ['Mecánico', 'Minutos', 'Horas'],
+      ...mechanicStats.map((s) => [s.full_name, s.total_minutes, (s.total_minutes / 60).toFixed(1)]),
+      [],
+      ['Estado', 'Vehículos'],
+      ...statusCounts.map((s) => [STATUS_LABELS[s.status], s.count]),
+      [],
+      ['Vehículos terminados', vehiclesFinished],
+      ['Total horas', Math.floor(totalHours / 60)],
+      ['Período (días)', rangeDays],
+    ];
+    const csv = rows.map((r) => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `analitica_${rangeDays}dias_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <AppShell>
       {organization && <SubscriptionBanner organization={organization} />}
       <div className="max-w-4xl mx-auto p-4 py-8 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Analítica</h1>
+          <button
+            onClick={exportCSV}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border/50 rounded-md px-2.5 py-1.5"
+          >
+            <Download className="h-3.5 w-3.5" /> Exportar CSV
+          </button>
           <div className="flex gap-1">
             {RANGE_OPTIONS.map(({ label, days }) => (
               <button
