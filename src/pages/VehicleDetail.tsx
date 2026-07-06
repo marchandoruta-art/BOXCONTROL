@@ -13,6 +13,9 @@ import { QualityCheckDialog } from '@/components/vehicles/QualityCheckDialog';
 import { WorkTimer } from '@/components/vehicles/WorkTimer';
 import { PartsList } from '@/components/vehicles/PartsList';
 import { VehiclePhotos } from '@/components/vehicles/VehiclePhotos';
+import { ReceptionReport } from '@/components/vehicles/ReceptionReport';
+import { AnomaliesList } from '@/components/vehicles/AnomaliesList';
+import { VehicleChat } from '@/components/vehicles/VehicleChat';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -356,6 +359,15 @@ export default function VehicleDetail() {
         <div className="border border-border/40 rounded-xl bg-card p-4">
           <PartsList vehicleId={vehicle.id} />
         </div>
+
+        {/* Informe de recepción */}
+        <ReceptionReport vehicle={vehicle} />
+
+        {/* Anomalías */}
+        <AnomaliesList vehicleId={vehicle.id} />
+
+        {/* Chat del equipo */}
+        <VehicleChat vehicleId={vehicle.id} />
       </div>
 
       <QualityCheckDialog
