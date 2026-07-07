@@ -35,6 +35,7 @@ import {
   Pencil,
   Check,
   Palette,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -61,6 +62,8 @@ export default function VehicleDetail() {
   const [editingNotes, setEditingNotes] = useState(false);
   const [notes, setNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchVehicle = useCallback(async () => {
     if (!id) return;
@@ -103,6 +106,19 @@ export default function VehicleDetail() {
     if (error) toast.error('Error al guardar notas');
     else { toast.success('Notas guardadas'); setEditingNotes(false); fetchVehicle(); }
     setSavingNotes(false);
+  };
+
+  const handleDelete = async () => {
+    if (!vehicle) return;
+    setDeleting(true);
+    const { error } = await supabase.from('vehicles').delete().eq('id', vehicle.id);
+    if (error) {
+      toast.error('Error al eliminar el vehículo');
+      setDeleting(false);
+    } else {
+      toast.success(`${vehicle.plate} eliminado`);
+      navigate('/dashboard');
+    }
   };
 
   const generatePortalLink = async () => {
@@ -151,9 +167,30 @@ export default function VehicleDetail() {
         <span className={cn('text-xs px-2 py-0.5 rounded-full border font-medium', PRIORITY_COLOR[vehicle.priority])}>
           {PRIORITY_LABELS[vehicle.priority]}
         </span>
-        <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
-          <Calendar className="h-3.5 w-3.5" />
-          {days === 0 ? 'Entrada hoy' : `${days} día${days !== 1 ? 's' : ''} en taller`}
+        <div className="ml-auto flex items-center gap-3">
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Calendar className="h-3.5 w-3.5" />
+            {days === 0 ? 'Entrada hoy' : `${days} día${days !== 1 ? 's' : ''} en taller`}
+          </span>
+          {confirmDelete ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-destructive font-medium">¿Eliminar?</span>
+              <Button size="sm" variant="destructive" className="h-7 text-xs gap-1" onClick={handleDelete} disabled={deleting}>
+                {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Sí, borrar'}
+              </Button>
+              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setConfirmDelete(false)}>
+                Cancelar
+              </Button>
+            </div>
+          ) : (
+            <Button
+              size="sm" variant="ghost"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              onClick={() => setConfirmDelete(true)}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
       </div>
 
