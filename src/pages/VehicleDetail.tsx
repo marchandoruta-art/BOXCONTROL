@@ -36,6 +36,8 @@ import {
   Check,
   Palette,
   Trash2,
+  History,
+  User2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -64,18 +66,39 @@ export default function VehicleDetail() {
   const [savingNotes, setSavingNotes] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [statusHistory, setStatusHistory] = useState<{ status: string; changed_at: string; changed_by_name: string | null }[]>([]);
 
   const fetchVehicle = useCallback(async () => {
     if (!id) return;
     setLoading(true);
-    const { data } = await supabase
-      .from('vehicles')
-      .select('*, owner:owners(*)')
-      .eq('id', id)
-      .maybeSingle();
+    const [{ data }, { data: history }] = await Promise.all([
+      supabase.from('vehicles').select('*, owner:owners(*)').eq('id', id).maybeSingle(),
+      supabase
+        .from('vehicle_status_history')
+        .select('status, changed_at, changed_by')
+        .eq('vehicle_id', id)
+        .order('changed_at', { ascending: false }),
+    ]);
     const v = data as unknown as Vehicle;
     setVehicle(v);
     setNotes(v?.work_summary ?? '');
+
+    // Enriquecer historial con nombre del perfil
+    if (history && history.length > 0) {
+      const userIds = [...new Set(history.map((h) => h.changed_by).filter(Boolean))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', userIds);
+      const profileMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.full_name]));
+      setStatusHistory(history.map((h) => ({
+        status: h.status,
+        changed_at: h.changed_at,
+        changed_by_name: h.changed_by ? (profileMap[h.changed_by] ?? 'Usuario') : null,
+      })));
+    } else {
+      setStatusHistory([]);
+    }
     setLoading(false);
   }, [id]);
 
@@ -397,6 +420,49 @@ export default function VehicleDetail() {
         <div className="border border-border/40 rounded-xl bg-card p-4">
           <PartsList vehicleId={vehicle.id} />
         </div>
+
+        {/* Historial de estados */}
+        {statusHistory.length > 0 && (
+          <div className="border border-border/40 rounded-xl bg-card p-4 space-y-3">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <History className="h-4 w-4 text-primary" /> Historial de estados
+            </h3>
+            <div className="space-y-0">
+              {statusHistory.map((h, i) => {
+                const isFirst = i === 0;
+                return (
+                  <div key={i} className="flex gap-3">
+                    <div className="flex flex-col items-center">
+                      <div className={cn(
+                        'w-4 h-4 rounded-full border-2 shrink-0 mt-0.5',
+                        isFirst ? 'border-primary bg-primary/20' : 'border-border/40 bg-muted/30'
+                      )} />
+                      {i < statusHistory.length - 1 && <div className="w-px flex-1 bg-border/30 my-1" />}
+                    </div>
+                    <div className={cn('pb-3 flex-1', isFirst ? 'pb-2' : '')}>
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span className={cn('text-sm font-medium', isFirst ? 'text-foreground' : 'text-muted-foreground')}>
+                          {STATUS_LABELS[h.status as VehicleStatus]}
+                        </span>
+                        {h.changed_by_name && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-full">
+                            <User2 className="h-2.5 w-2.5" /> {h.changed_by_name}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {new Date(h.changed_at).toLocaleString('es-ES', {
+                          day: '2-digit', month: 'short', year: 'numeric',
+                          hour: '2-digit', minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Presupuestos / Órdenes de trabajo */}
         <WorkOrders vehicle={vehicle} orgName={organization?.name ?? 'Taller'} />
