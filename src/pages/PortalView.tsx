@@ -8,10 +8,6 @@ import {
   Wrench, Package, ChevronRight, ImageIcon, FileText,
 } from 'lucide-react';
 
-const STATUS_ORDER: VehicleStatus[] = [
-  'recibido', 'presupuestar', 'presupuestado', 'en_reparacion',
-  'pendiente_piezas', 'control_calidad', 'terminado', 'entregado',
-];
 
 const STATUS_PROGRESS: Record<VehicleStatus, number> = {
   recibido: 10, presupuestar: 25, presupuestado: 40,
