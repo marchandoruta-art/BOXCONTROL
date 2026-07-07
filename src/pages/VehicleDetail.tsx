@@ -16,7 +16,9 @@ import { VehiclePhotos } from '@/components/vehicles/VehiclePhotos';
 import { ReceptionReport } from '@/components/vehicles/ReceptionReport';
 import { AnomaliesList } from '@/components/vehicles/AnomaliesList';
 import { VehicleChat } from '@/components/vehicles/VehicleChat';
+import { WorkOrders } from '@/components/vehicles/WorkOrders';
 import { AppShell } from '@/components/layout/AppShell';
+import { useOrganization } from '@/hooks/useOrganization';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -53,6 +55,7 @@ function daysAgo(dateStr: string) {
 export default function VehicleDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { organization } = useOrganization();
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [qualityOpen, setQualityOpen] = useState(false);
@@ -359,6 +362,9 @@ export default function VehicleDetail() {
         <div className="border border-border/40 rounded-xl bg-card p-4">
           <PartsList vehicleId={vehicle.id} />
         </div>
+
+        {/* Presupuestos / Órdenes de trabajo */}
+        <WorkOrders vehicle={vehicle} orgName={organization?.name ?? 'Taller'} />
 
         {/* Informe de recepción */}
         <ReceptionReport vehicle={vehicle} />
