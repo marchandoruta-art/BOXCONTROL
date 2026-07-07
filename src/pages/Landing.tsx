@@ -93,16 +93,16 @@ const STEPS = [
 export default function Landing() {
   const navigate = useNavigate();
   const [billingInterval, setBillingInterval] = useState<'month' | 'year'>('month');
-  const [loadingPlan, setLoadingPlan] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-  const handleSubscribe = async () => {
-    setLoadingPlan(true);
+  const handleSubscribe = async (plan: 'basico' | 'profesional' | 'pro') => {
+    setLoadingPlan(plan);
     const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-      body: { interval: billingInterval },
+      body: { interval: billingInterval, plan },
     });
     if (error || !data?.url) {
       toast.error('Error al iniciar el pago. Prueba desde el panel de usuario.');
-      setLoadingPlan(false);
+      setLoadingPlan(null);
       return;
     }
     window.location.href = data.url;
@@ -230,92 +230,164 @@ export default function Landing() {
       </section>
 
       {/* Pricing */}
-      <section className="max-w-4xl mx-auto px-6 py-20" id="pricing">
+      <section className="max-w-5xl mx-auto px-6 py-20" id="pricing">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold mb-3">Precio simple y directo</h2>
-          <p className="text-muted-foreground">Un plan para talleres de cualquier tamaño</p>
-
+          <h2 className="text-3xl font-bold mb-3">Elige tu plan</h2>
+          <p className="text-muted-foreground">Desde el taller unipersonal hasta la cadena de talleres</p>
           <div className="inline-flex items-center bg-muted/60 rounded-full p-1 mt-6 gap-1">
             <button
               onClick={() => setBillingInterval('month')}
-              className={cn(
-                'px-5 py-1.5 rounded-full text-sm font-medium transition-all',
-                billingInterval === 'month' ? 'bg-card shadow text-foreground' : 'text-muted-foreground'
-              )}
-            >
-              Mensual
-            </button>
+              className={cn('px-5 py-1.5 rounded-full text-sm font-medium transition-all',
+                billingInterval === 'month' ? 'bg-card shadow text-foreground' : 'text-muted-foreground')}
+            >Mensual</button>
             <button
               onClick={() => setBillingInterval('year')}
-              className={cn(
-                'px-5 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-2',
-                billingInterval === 'year' ? 'bg-card shadow text-foreground' : 'text-muted-foreground'
-              )}
+              className={cn('px-5 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-2',
+                billingInterval === 'year' ? 'bg-card shadow text-foreground' : 'text-muted-foreground')}
             >
               Anual
-              <span className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                -28%
-              </span>
+              <span className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold">-28%</span>
             </button>
           </div>
         </div>
 
-        <div className="max-w-sm mx-auto">
-          <div className="border border-primary/40 rounded-2xl bg-card p-8 text-center relative shadow-xl shadow-primary/5">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full">
-              TODO INCLUIDO
-            </div>
+        <div className="grid md:grid-cols-3 gap-6 items-start">
 
-            <div className="mt-2">
+          {/* BÁSICO */}
+          <div className="border border-border/50 rounded-2xl bg-card p-7 flex flex-col">
+            <div className="mb-5">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium mb-1">Básico</p>
+              <p className="text-sm text-muted-foreground mb-4">Para el taller unipersonal</p>
               {billingInterval === 'month' ? (
-                <>
-                  <span className="text-5xl font-bold">29€</span>
-                  <span className="text-muted-foreground text-sm ml-1">/mes</span>
-                </>
+                <div><span className="text-4xl font-bold">19€</span><span className="text-muted-foreground text-sm ml-1">/mes</span></div>
               ) : (
-                <>
-                  <span className="text-5xl font-bold">249€</span>
-                  <span className="text-muted-foreground text-sm ml-1">/año</span>
-                  <p className="text-xs text-primary mt-1">
-                    Equivale a 20,75€/mes · Ahorras 99€
-                  </p>
-                </>
+                <div>
+                  <span className="text-4xl font-bold">159€</span><span className="text-muted-foreground text-sm ml-1">/año</span>
+                  <p className="text-xs text-primary mt-1">Equivale a 13,25€/mes · Ahorras 69€</p>
+                </div>
               )}
             </div>
-
-            <ul className="mt-6 space-y-2.5 text-sm text-left">
+            <ul className="space-y-2.5 text-sm flex-1 mb-6">
               {[
-                'Vehículos y mecánicos ilimitados',
-                'Kanban + lista + agenda de citas',
-                'Control de calidad con checklist',
-                'Fotos de vehículos',
-                'Gestión de piezas',
-                'Cronómetro y fichaje de personal',
-                'Analítica de productividad',
-                'Historial completo por matrícula',
+                '1 mecánico',
+                'Hasta 30 vehículos activos',
+                'Kanban y lista de vehículos',
+                'Ficha completa del vehículo',
+                'Fotos del vehículo',
+                'Presupuestos básicos',
+                'Portal del cliente',
+                'Agenda de citas',
                 'Soporte en español',
-                '14 días de prueba gratuita',
               ].map((f) => (
                 <li key={f} className="flex items-center gap-2.5 text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                  {f}
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />{f}
+                </li>
+              ))}
+              {['Informe de recepción', 'Analítica avanzada', 'Chat del equipo', 'Mecánicos adicionales'].map((f) => (
+                <li key={f} className="flex items-center gap-2.5 text-muted-foreground/40 line-through">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />{f}
                 </li>
               ))}
             </ul>
-
-            <Button
-              className="w-full mt-8 text-base h-11"
-              onClick={handleSubscribe}
-              disabled={loadingPlan}
-            >
-              {loadingPlan ? 'Redirigiendo...' : 'Empezar prueba gratuita'}
-              {!loadingPlan && <ChevronRight className="h-4 w-4 ml-1" />}
+            <Button variant="outline" className="w-full" onClick={() => handleSubscribe('basico')} disabled={!!loadingPlan}>
+              {loadingPlan === 'basico' ? 'Redirigiendo...' : 'Empezar prueba gratuita'}
             </Button>
-            <p className="text-xs text-muted-foreground mt-3">
-              Sin tarjeta hasta que finalice la prueba
-            </p>
+            <p className="text-xs text-muted-foreground mt-2 text-center">14 días gratis · Sin tarjeta</p>
           </div>
+
+          {/* PROFESIONAL */}
+          <div className="border border-primary/50 rounded-2xl bg-card p-7 flex flex-col relative shadow-xl shadow-primary/5">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
+              MÁS POPULAR
+            </div>
+            <div className="mb-5">
+              <p className="text-xs text-primary uppercase tracking-widest font-medium mb-1">Profesional</p>
+              <p className="text-sm text-muted-foreground mb-4">Para talleres con equipo</p>
+              {billingInterval === 'month' ? (
+                <div><span className="text-4xl font-bold">39€</span><span className="text-muted-foreground text-sm ml-1">/mes</span></div>
+              ) : (
+                <div>
+                  <span className="text-4xl font-bold">329€</span><span className="text-muted-foreground text-sm ml-1">/año</span>
+                  <p className="text-xs text-primary mt-1">Equivale a 27,42€/mes · Ahorras 139€</p>
+                </div>
+              )}
+            </div>
+            <ul className="space-y-2.5 text-sm flex-1 mb-6">
+              {[
+                'Hasta 5 mecánicos',
+                'Hasta 150 vehículos activos',
+                'Todo lo del plan Básico',
+                'Informe de recepción con firma',
+                'Anomalías con fotos',
+                'Chat interno del equipo',
+                'Cronómetro y registro de horas',
+                'Gestión de piezas',
+                'Analítica de productividad',
+                'Control de calidad',
+                'Soporte prioritario',
+              ].map((f) => (
+                <li key={f} className="flex items-center gap-2.5 text-muted-foreground">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />{f}
+                </li>
+              ))}
+              {['Mecánicos ilimitados', 'Vehículos ilimitados'].map((f) => (
+                <li key={f} className="flex items-center gap-2.5 text-muted-foreground/40 line-through">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />{f}
+                </li>
+              ))}
+            </ul>
+            <Button className="w-full" onClick={() => handleSubscribe('profesional')} disabled={!!loadingPlan}>
+              {loadingPlan === 'profesional' ? 'Redirigiendo...' : 'Empezar prueba gratuita'}
+              {loadingPlan !== 'profesional' && <ChevronRight className="h-4 w-4 ml-1" />}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2 text-center">14 días gratis · Sin tarjeta</p>
+          </div>
+
+          {/* PRO / ILIMITADO */}
+          <div className="border border-border/50 rounded-2xl bg-card p-7 flex flex-col">
+            <div className="mb-5">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium mb-1">Pro</p>
+              <p className="text-sm text-muted-foreground mb-4">Para cadenas y talleres grandes</p>
+              {billingInterval === 'month' ? (
+                <div><span className="text-4xl font-bold">69€</span><span className="text-muted-foreground text-sm ml-1">/mes</span></div>
+              ) : (
+                <div>
+                  <span className="text-4xl font-bold">589€</span><span className="text-muted-foreground text-sm ml-1">/año</span>
+                  <p className="text-xs text-primary mt-1">Equivale a 49,08€/mes · Ahorras 239€</p>
+                </div>
+              )}
+            </div>
+            <ul className="space-y-2.5 text-sm flex-1 mb-6">
+              {[
+                'Mecánicos ilimitados',
+                'Vehículos ilimitados',
+                'Todo lo del plan Profesional',
+                'Múltiples sedes / marcas',
+                'Exportación de datos completa',
+                'Analítica avanzada con CSV',
+                'API de integraciones',
+                'Gestor de inventario',
+                'Soporte VIP con respuesta en 2h',
+                '14 días de prueba gratuita',
+              ].map((f) => (
+                <li key={f} className="flex items-center gap-2.5 text-muted-foreground">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />{f}
+                </li>
+              ))}
+            </ul>
+            <Button variant="outline" className="w-full" onClick={() => handleSubscribe('pro')} disabled={!!loadingPlan}>
+              {loadingPlan === 'pro' ? 'Redirigiendo...' : 'Empezar prueba gratuita'}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2 text-center">14 días gratis · Sin tarjeta</p>
+          </div>
+
         </div>
+
+        {/* Comparativa rápida */}
+        <p className="text-center text-xs text-muted-foreground mt-8">
+          Todos los planes incluyen actualizaciones automáticas, HTTPS, backups diarios y cumplimiento RGPD.
+          Puedes cambiar o cancelar tu plan en cualquier momento.
+        </p>
       </section>
 
       {/* Testimonial */}
