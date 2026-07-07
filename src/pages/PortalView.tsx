@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { type VehicleStatus, STATUS_LABELS } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import {
-  Loader2, Car, CheckCircle2, Clock, Circle, Phone, Mail,
+  Loader2, Car, CheckCircle2, Phone, Mail,
   Wrench, Package, ChevronRight, ImageIcon, FileText,
 } from 'lucide-react';
 
@@ -227,8 +227,6 @@ export default function PortalView() {
   }
 
   const pct = STATUS_PROGRESS[data.status] ?? 0;
-  const currentIdx = STATUS_ORDER.indexOf(data.status);
-  const visibleSteps: VehicleStatus[] = ['recibido', 'presupuestado', 'en_reparacion', 'control_calidad', 'terminado', 'entregado'];
 
   return (
     <div className="min-h-screen bg-[hsl(220_13%_6%)] text-white">
