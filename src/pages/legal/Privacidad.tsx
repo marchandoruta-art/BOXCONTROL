@@ -9,9 +9,10 @@ export default function Privacidad() {
           te informamos que el responsable del tratamiento de tus datos personales es:
         </p>
         <ul className="list-disc pl-5 space-y-1">
-          <li><strong>Razón social:</strong> [TU NOMBRE O EMPRESA] — <em>sustituye este dato</em></li>
-          <li><strong>NIF/CIF:</strong> [TU NIF] — <em>sustituye este dato</em></li>
-          <li><strong>Domicilio:</strong> [TU DIRECCIÓN] — <em>sustituye este dato</em></li>
+          <li><strong>Razón social:</strong> Israel Maria Garcia Redondo</li>
+          <li><strong>NIF:</strong> 46951836G</li>
+          <li><strong>Domicilio:</strong> Calle Isidor Macabich, 32, Puerta 6 — 07860 Formentera (Illes Balears), España</li>
+          <li><strong>Teléfono:</strong> 628 086 730</li>
           <li><strong>Email de contacto:</strong> marchandoruta@gmail.com</li>
         </ul>
       </Section>

@@ -7,7 +7,7 @@ export default function Terminos() {
         <p>
           Estos Términos regulan el acceso y uso de <strong>TallerControl</strong>, servicio de software
           como servicio (SaaS) para la gestión de talleres mecánicos, ofrecido por{' '}
-          <strong>[TU NOMBRE O EMPRESA]</strong> (en adelante, "el Proveedor"), con email de contacto
+          <strong>Israel Maria Garcia Redondo</strong> (NIF: 46951836G), con domicilio en Calle Isidor Macabich, 32, Puerta 6, 07860 Formentera, España (en adelante, "el Proveedor"), con email de contacto
           marchandoruta@gmail.com.
         </p>
         <p>
@@ -129,7 +129,7 @@ export default function Terminos() {
         <p>
           Estos Términos se rigen por la legislación española. Para cualquier controversia, las partes
           se someten a los juzgados y tribunales del domicilio del usuario (si es consumidor) o de
-          [TU CIUDAD] (si es empresa).
+          Formentera (si es empresa).
         </p>
       </Section>
 

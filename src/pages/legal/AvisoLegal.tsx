@@ -10,9 +10,10 @@ export default function AvisoLegal() {
           del titular de este sitio web:
         </p>
         <ul className="list-disc pl-5 space-y-1">
-          <li><strong>Titular:</strong> [TU NOMBRE COMPLETO O RAZÓN SOCIAL] — <em className="text-primary">⚠ Rellena este dato</em></li>
-          <li><strong>NIF / CIF:</strong> [TU NIF O CIF] — <em className="text-primary">⚠ Rellena este dato</em></li>
-          <li><strong>Domicilio social:</strong> [TU DIRECCIÓN COMPLETA, CIUDAD, CP, ESPAÑA] — <em className="text-primary">⚠ Rellena este dato</em></li>
+          <li><strong>Titular:</strong> Israel Maria Garcia Redondo</li>
+          <li><strong>NIF:</strong> 46951836G</li>
+          <li><strong>Domicilio:</strong> Calle Isidor Macabich, 32, Puerta 6 — 07860 Formentera (Illes Balears), España</li>
+          <li><strong>Teléfono:</strong> 628 086 730</li>
           <li><strong>Email de contacto:</strong> marchandoruta@gmail.com</li>
           <li><strong>Actividad:</strong> Desarrollo y comercialización de software de gestión para talleres mecánicos (SaaS).</li>
         </ul>
