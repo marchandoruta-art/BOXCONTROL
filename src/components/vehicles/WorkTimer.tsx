@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useOrganization } from '@/hooks/useOrganization';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Play, Square, Timer, AlertTriangle } from 'lucide-react';
+import { Play, Square, Timer } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface TimeLog {
@@ -87,10 +87,28 @@ export function WorkTimer({ vehicleId }: { vehicleId: string }) {
 
   const start = async () => {
     if (!user || !organizationId) return;
-    if (blockedByVehicle) {
-      toast.error(`Ya tienes el cronómetro activo en ${blockedByVehicle}. Para primero ese.`);
-      return;
+
+    // Si hay otro vehículo activo, pararlo automáticamente
+    const { data: otherActive } = await supabase
+      .from('time_logs')
+      .select('id, started_at, vehicles(plate)')
+      .eq('user_id', user.id)
+      .is('ended_at', null)
+      .neq('vehicle_id', vehicleId)
+      .maybeSingle();
+
+    if (otherActive) {
+      const minutes = Math.max(1, Math.round(
+        (Date.now() - new Date(otherActive.started_at).getTime()) / 60000
+      ));
+      await supabase
+        .from('time_logs')
+        .update({ ended_at: new Date().toISOString(), total_minutes: minutes })
+        .eq('id', otherActive.id);
+      const plate = (otherActive as any).vehicles?.plate ?? 'vehículo anterior';
+      toast.info(`Cronómetro de ${plate} parado automáticamente (${minutes} min)`);
     }
+
     const { data, error } = await supabase
       .from('time_logs')
       .insert({ organization_id: organizationId, vehicle_id: vehicleId, user_id: user.id })
@@ -99,6 +117,7 @@ export function WorkTimer({ vehicleId }: { vehicleId: string }) {
     if (error || !data) { toast.error('Error al iniciar el cronómetro'); return; }
     setActiveLogId(data.id);
     setStartedAt(new Date(data.started_at));
+    setBlockedByVehicle(null);
     toast.success('Cronómetro iniciado');
   };
 
@@ -152,13 +171,6 @@ export function WorkTimer({ vehicleId }: { vehicleId: string }) {
         )}
       </div>
 
-      {/* Aviso bloqueo */}
-      {blockedByVehicle && (
-        <div className="flex items-center gap-2 text-xs text-[hsl(35_92%_55%)] bg-[hsl(35_92%_55%/0.1)] border border-[hsl(35_92%_55%/0.3)] rounded-lg px-3 py-2">
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-          Tienes el cronómetro activo en <span className="font-mono font-bold ml-1">{blockedByVehicle}</span>. Para primero ese para poder iniciar aquí.
-        </div>
-      )}
 
       {/* Historial de tiempos */}
       {logs.filter((l) => l.ended_at).length > 0 && (
