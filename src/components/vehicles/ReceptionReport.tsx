@@ -44,7 +44,6 @@ const INTERIOR_ITEMS = [
 ];
 
 function FuelGauge({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  const segments = [0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100];
   const color = value <= 25 ? 'bg-[hsl(0_72%_60%)]' : value <= 50 ? 'bg-[hsl(35_92%_55%)]' : 'bg-[hsl(142_68%_48%)]';
   return (
     <div className="space-y-2">

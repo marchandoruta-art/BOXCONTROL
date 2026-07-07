@@ -20,8 +20,6 @@ import { WorkOrders } from '@/components/vehicles/WorkOrders';
 import { AppShell } from '@/components/layout/AppShell';
 import { useOrganization } from '@/hooks/useOrganization';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   ArrowLeft,
   ShieldCheck,
