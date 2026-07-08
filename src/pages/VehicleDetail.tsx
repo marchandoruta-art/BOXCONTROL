@@ -17,6 +17,7 @@ import { ReceptionReport } from '@/components/vehicles/ReceptionReport';
 import { AnomaliesList } from '@/components/vehicles/AnomaliesList';
 import { VehicleChat } from '@/components/vehicles/VehicleChat';
 import { WorkOrders } from '@/components/vehicles/WorkOrders';
+import { TaskChecklist } from '@/components/vehicles/TaskChecklist';
 import { AppShell } from '@/components/layout/AppShell';
 import { useOrganization } from '@/hooks/useOrganization';
 import { Button } from '@/components/ui/button';
@@ -38,9 +39,113 @@ import {
   Trash2,
   History,
   User2,
+  Gauge,
+  Fuel,
+  Hash,
+  CalendarClock,
+  UserCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+const FUEL_OPTIONS = [
+  { value: 'gasolina', label: 'Gasolina' },
+  { value: 'diesel', label: 'Diésel' },
+  { value: 'electrico', label: 'Eléctrico' },
+  { value: 'hibrido', label: 'Híbrido' },
+  { value: 'hibrido_enchufable', label: 'Híbrido enchufable' },
+  { value: 'glp', label: 'GLP' },
+  { value: 'otro', label: 'Otro' },
+];
+
+function VehicleExtrasEditor({
+  vehicle, teamMembers, onSaved,
+}: {
+  vehicle: Vehicle;
+  teamMembers: { id: string; full_name: string }[];
+  onSaved: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [vin, setVin] = useState((vehicle as any).vin ?? '');
+  const [fuel, setFuel] = useState((vehicle as any).fuel_type ?? '');
+  const [mileage, setMileage] = useState((vehicle as any).mileage?.toString() ?? '');
+  const [delivery, setDelivery] = useState((vehicle as any).estimated_delivery ?? '');
+  const [assignedTo, setAssignedTo] = useState((vehicle as any).assigned_to ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase.from('vehicles').update({
+      vin: vin || null,
+      fuel_type: fuel || null,
+      mileage: mileage ? Number(mileage) : null,
+      estimated_delivery: delivery || null,
+      assigned_to: assignedTo || null,
+    }).eq('id', vehicle.id);
+    if (error) toast.error('Error al guardar');
+    else { toast.success('Datos actualizados'); setOpen(false); onSaved(); }
+    setSaving(false);
+  };
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mt-1"
+      >
+        <Pencil className="h-3 w-3" /> Editar datos técnicos
+      </button>
+    );
+  }
+
+  return (
+    <div className="border-t border-border/30 pt-3 mt-2 space-y-2">
+      <p className="text-xs font-medium text-muted-foreground">Datos técnicos</p>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1">
+          <label className="text-[10px] text-muted-foreground">Bastidor (VIN)</label>
+          <input value={vin} onChange={(e) => setVin(e.target.value.toUpperCase())}
+            placeholder="WBA..." className="w-full text-xs bg-muted/30 border border-border/50 rounded px-2 py-1.5 font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 text-foreground" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] text-muted-foreground">Kilómetros</label>
+          <input value={mileage} onChange={(e) => setMileage(e.target.value)} type="number"
+            placeholder="85000" className="w-full text-xs bg-muted/30 border border-border/50 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-foreground" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] text-muted-foreground">Combustible</label>
+          <select value={fuel} onChange={(e) => setFuel(e.target.value)}
+            className="w-full text-xs bg-muted/30 border border-border/50 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-foreground">
+            <option value="">—</option>
+            {FUEL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] text-muted-foreground">Entrega estimada</label>
+          <input value={delivery} onChange={(e) => setDelivery(e.target.value)} type="date"
+            className="w-full text-xs bg-muted/30 border border-border/50 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-foreground" />
+        </div>
+      </div>
+      <div className="space-y-1">
+        <label className="text-[10px] text-muted-foreground">Mecánico asignado</label>
+        <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}
+          className="w-full text-xs bg-muted/30 border border-border/50 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary/50 text-foreground">
+          <option value="">Sin asignar</option>
+          {teamMembers.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
+        </select>
+      </div>
+      <div className="flex gap-2 pt-1">
+        <button onClick={() => setOpen(false)} className="flex-1 text-xs text-muted-foreground hover:text-foreground border border-border/40 rounded px-2 py-1.5 transition-colors">
+          Cancelar
+        </button>
+        <button onClick={save} disabled={saving}
+          className="flex-1 text-xs bg-primary text-primary-foreground rounded px-2 py-1.5 hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1 transition-colors">
+          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} Guardar
+        </button>
+      </div>
+    </div>
+  );
+}
 
 const PRIORITY_COLOR: Record<string, string> = {
   baja: 'text-[hsl(215_60%_62%)] bg-[hsl(215_60%_62%/0.15)] border-[hsl(215_60%_62%/0.3)]',
@@ -66,13 +171,14 @@ export default function VehicleDetail() {
   const [savingNotes, setSavingNotes] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<{ id: string; full_name: string }[]>([]);
   const [statusHistory, setStatusHistory] = useState<{ status: string; changed_at: string; changed_by_name: string | null }[]>([]);
 
   const fetchVehicle = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     const [{ data }, { data: history }] = await Promise.all([
-      supabase.from('vehicles').select('*, owner:owners(*)').eq('id', id).maybeSingle(),
+      supabase.from('vehicles').select('*, owner:owners(*), assigned:profiles!assigned_to(id,full_name)').eq('id', id).maybeSingle(),
       supabase
         .from('vehicle_status_history')
         .select('status, changed_at, changed_by')
@@ -80,6 +186,10 @@ export default function VehicleDetail() {
         .order('changed_at', { ascending: false }),
     ]);
     const v = data as unknown as Vehicle;
+    if (v?.organization_id) {
+      const { data: members } = await supabase.from('profiles').select('id, full_name').eq('organization_id', v.organization_id);
+      setTeamMembers((members ?? []) as { id: string; full_name: string }[]);
+    }
     setVehicle(v);
     setNotes(v?.work_summary ?? '');
 
@@ -321,7 +431,46 @@ export default function VehicleDetail() {
                 <span className="text-muted-foreground">Entrada</span>
                 <span>{new Date(vehicle.created_at).toLocaleDateString('es-ES')}</span>
               </div>
+              {(vehicle as any).vin && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground flex items-center gap-1"><Hash className="h-3 w-3" /> Bastidor</span>
+                  <span className="font-mono text-xs">{(vehicle as any).vin}</span>
+                </div>
+              )}
+              {(vehicle as any).fuel_type && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground flex items-center gap-1"><Fuel className="h-3 w-3" /> Combustible</span>
+                  <span className="capitalize">{(vehicle as any).fuel_type.replace('_', ' ')}</span>
+                </div>
+              )}
+              {(vehicle as any).mileage && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground flex items-center gap-1"><Gauge className="h-3 w-3" /> Kilómetros</span>
+                  <span>{(vehicle as any).mileage.toLocaleString('es-ES')} km</span>
+                </div>
+              )}
+              {(vehicle as any).estimated_delivery && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground flex items-center gap-1"><CalendarClock className="h-3 w-3" /> Entrega estimada</span>
+                  <span className={cn(
+                    'font-medium',
+                    new Date((vehicle as any).estimated_delivery) < new Date() ? 'text-[hsl(0_72%_60%)]' : 'text-[hsl(142_68%_48%)]'
+                  )}>
+                    {new Date((vehicle as any).estimated_delivery).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                  </span>
+                </div>
+              )}
+              {(vehicle as any).assigned && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground flex items-center gap-1"><UserCheck className="h-3 w-3" /> Mecánico</span>
+                  <span className="font-medium text-primary">{(vehicle as any).assigned?.full_name}</span>
+                </div>
+              )}
             </div>
+
+            {/* Edición rápida de campos extra */}
+            <VehicleExtrasEditor vehicle={vehicle} teamMembers={teamMembers} onSaved={fetchVehicle} />
+
             {vehicle.client_description && (
               <div className="border-t border-border/30 pt-3">
                 <p className="text-xs text-muted-foreground mb-1">Motivo de entrada</p>
@@ -463,6 +612,9 @@ export default function VehicleDetail() {
             </div>
           </div>
         )}
+
+        {/* Tareas del trabajo */}
+        <TaskChecklist vehicleId={vehicle.id} />
 
         {/* Presupuestos / Órdenes de trabajo */}
         <WorkOrders vehicle={vehicle} orgName={organization?.name ?? 'Taller'} />
