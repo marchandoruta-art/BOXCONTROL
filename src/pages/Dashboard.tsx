@@ -27,6 +27,8 @@ import {
   LayoutGrid,
   List,
   Filter,
+  ChevronRight,
+  Trophy,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -90,53 +92,88 @@ function KpiCard({
 function VehicleCard({
   vehicle,
   onClick,
+  onAdvance,
+  onFinish,
   dragProps,
 }: {
   vehicle: Vehicle;
   onClick: () => void;
+  onAdvance: (e: React.MouseEvent) => void;
+  onFinish: (e: React.MouseEvent) => void;
   dragProps?: Record<string, unknown>;
 }) {
   const days = daysAgo(vehicle.created_at);
+  const currentIdx = STATUS_ORDER.indexOf(vehicle.status);
+  const nextStatus = STATUS_ORDER[currentIdx + 1];
+  const isTerminado = vehicle.status === 'terminado';
+  const isEntregado = vehicle.status === 'entregado';
+
   return (
     <div
       {...dragProps}
-      onClick={onClick}
       className={cn(
-        'rounded-md border bg-card cursor-pointer hover:border-primary/40 hover:shadow-md hover:shadow-black/20',
-        'transition-all duration-150 p-3 space-y-2 border-l-4',
+        'rounded-md border bg-card overflow-hidden',
+        'transition-all duration-150 border-l-4',
         PRIORITY_COLORS[vehicle.priority]
       )}
     >
-      {/* Row 1: plate + status */}
-      <div className="flex items-start justify-between gap-2">
-        <span className="font-mono text-sm font-bold tracking-wider text-foreground">
-          {vehicle.plate}
-        </span>
-        <VehicleStatusBadge status={vehicle.status} className="text-[10px] shrink-0" />
-      </div>
-
-      {/* Row 2: brand model */}
-      <p className="text-xs font-medium text-muted-foreground">
-        {vehicle.brand} {vehicle.model}
-        {vehicle.year ? ` · ${vehicle.year}` : ''}
-      </p>
-
-      {/* Row 3: owner */}
-      {vehicle.owner?.name && (
-        <p className="text-xs text-muted-foreground/80 truncate flex items-center gap-1">
-          <span className="inline-block h-1 w-1 rounded-full bg-muted-foreground/50" />
-          {vehicle.owner.name}
-        </p>
+      {/* Banner verde — dar por terminado (solo en terminado) */}
+      {isTerminado && (
+        <button
+          onClick={onFinish}
+          className="w-full flex items-center justify-center gap-2 bg-[hsl(142_68%_48%)] hover:bg-[hsl(142_68%_42%)] text-white text-xs font-bold py-1.5 transition-colors"
+        >
+          <Trophy className="h-3.5 w-3.5" /> MARCAR COMO ENTREGADO
+        </button>
       )}
 
-      {/* Row 4: meta */}
-      <div className="flex items-center justify-between pt-0.5">
-        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-          <Clock className="h-3 w-3" />
-          <span>{days === 0 ? 'Hoy' : `${days}d`}</span>
+      {/* Cuerpo de la tarjeta */}
+      <div
+        onClick={onClick}
+        className="p-3 space-y-2 cursor-pointer hover:bg-muted/10 transition-colors"
+      >
+        {/* Row 1: plate + status */}
+        <div className="flex items-start justify-between gap-2">
+          <span className="font-mono text-sm font-bold tracking-wider text-foreground">
+            {vehicle.plate}
+          </span>
+          <VehicleStatusBadge status={vehicle.status} className="text-[10px] shrink-0" />
         </div>
-        <div className={cn('h-2 w-2 rounded-full', PRIORITY_DOT[vehicle.priority])} title={vehicle.priority} />
+
+        {/* Row 2: brand model */}
+        <p className="text-xs font-medium text-muted-foreground">
+          {vehicle.brand} {vehicle.model}
+          {vehicle.year ? ` · ${vehicle.year}` : ''}
+        </p>
+
+        {/* Row 3: owner */}
+        {vehicle.owner?.name && (
+          <p className="text-xs text-muted-foreground/80 truncate flex items-center gap-1">
+            <span className="inline-block h-1 w-1 rounded-full bg-muted-foreground/50" />
+            {vehicle.owner.name}
+          </p>
+        )}
+
+        {/* Row 4: meta */}
+        <div className="flex items-center justify-between pt-0.5">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            <span>{days === 0 ? 'Hoy' : `${days}d`}</span>
+          </div>
+          <div className={cn('h-2 w-2 rounded-full', PRIORITY_DOT[vehicle.priority])} title={vehicle.priority} />
+        </div>
       </div>
+
+      {/* Banner avanzar estado */}
+      {!isEntregado && !isTerminado && nextStatus && (
+        <button
+          onClick={onAdvance}
+          className="w-full flex items-center justify-center gap-1.5 border-t border-border/30 bg-muted/20 hover:bg-primary/10 hover:border-primary/30 text-muted-foreground hover:text-primary text-[10px] font-medium py-1.5 transition-all"
+        >
+          <ChevronRight className="h-3 w-3" />
+          Pasar a {STATUS_LABELS[nextStatus]}
+        </button>
+      )}
     </div>
   );
 }
@@ -194,6 +231,29 @@ export default function Dashboard() {
       setSearchParams({});
     }
   }, [searchParams, setSearchParams]);
+
+  const handleAdvance = async (e: React.MouseEvent, vehicle: Vehicle) => {
+    e.stopPropagation();
+    const currentIdx = STATUS_ORDER.indexOf(vehicle.status);
+    const next = STATUS_ORDER[currentIdx + 1];
+    if (!next) return;
+    if (vehicle.status !== 'control_calidad' && next === 'terminado') {
+      toast.warning('Debe pasar primero por Control de Calidad');
+      return;
+    }
+    setVehicles((prev) => prev.map((v) => v.id === vehicle.id ? { ...v, status: next } : v));
+    const { error } = await supabase.from('vehicles').update({ status: next }).eq('id', vehicle.id);
+    if (error) { toast.error('Error al actualizar'); fetchVehicles(); }
+    else toast.success(`${vehicle.plate} → ${STATUS_LABELS[next]}`);
+  };
+
+  const handleFinish = async (e: React.MouseEvent, vehicle: Vehicle) => {
+    e.stopPropagation();
+    setVehicles((prev) => prev.filter((v) => v.id !== vehicle.id));
+    const { error } = await supabase.from('vehicles').update({ status: 'entregado' }).eq('id', vehicle.id);
+    if (error) { toast.error('Error al marcar como entregado'); fetchVehicles(); }
+    else toast.success(`✓ ${vehicle.plate} entregado`);
+  };
 
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
@@ -428,6 +488,8 @@ export default function Dashboard() {
                                   <VehicleCard
                                     vehicle={vehicle}
                                     onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                                    onAdvance={(e) => handleAdvance(e, vehicle)}
+                                    onFinish={(e) => handleFinish(e, vehicle)}
                                   />
                                 </div>
                               )}
