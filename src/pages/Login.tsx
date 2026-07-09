@@ -26,12 +26,8 @@ export default function Login() {
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success(
-        mode === 'signin'
-          ? 'Sesión iniciada'
-          : 'Cuenta creada. Revisa tu email si se requiere confirmación.'
-      );
-      navigate('/dashboard');
+      toast.success(mode === 'signin' ? 'Sesión iniciada' : '¡Cuenta creada! Configura tu taller.');
+      navigate(mode === 'signin' ? '/dashboard' : '/onboarding');
     }
     setLoading(false);
   };

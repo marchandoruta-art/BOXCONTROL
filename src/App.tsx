@@ -35,11 +35,11 @@ export default function App() {
           <Route path="/portal/:token" element={<PortalView />} />
           <Route path="/invite/:token" element={<AcceptInvite />} />
 
-          {/* Onboarding (protegido pero sin org obligatoria) */}
+          {/* Onboarding: requiere login pero no taller previo */}
           <Route
             path="/onboarding"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requireOrg={false}>
                 <Onboarding />
               </ProtectedRoute>
             }
