@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/hooks/useAuth';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
+import { SubscriptionGate } from '@/components/layout/SubscriptionGate';
 import Landing from '@/pages/Landing';
 import Login from '@/pages/Login';
 import Onboarding from '@/pages/Onboarding';
@@ -45,12 +46,12 @@ export default function App() {
             }
           />
 
-          {/* App protegida */}
+          {/* App protegida — envuelta en SubscriptionGate */}
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <SubscriptionGate><Dashboard /></SubscriptionGate>
               </ProtectedRoute>
             }
           />
@@ -58,7 +59,7 @@ export default function App() {
             path="/vehicles/:id"
             element={
               <ProtectedRoute>
-                <VehicleDetail />
+                <SubscriptionGate><VehicleDetail /></SubscriptionGate>
               </ProtectedRoute>
             }
           />
@@ -66,7 +67,7 @@ export default function App() {
             path="/analytics"
             element={
               <ProtectedRoute>
-                <Analytics />
+                <SubscriptionGate><Analytics /></SubscriptionGate>
               </ProtectedRoute>
             }
           />
@@ -74,7 +75,7 @@ export default function App() {
             path="/team"
             element={
               <ProtectedRoute>
-                <Team />
+                <SubscriptionGate><Team /></SubscriptionGate>
               </ProtectedRoute>
             }
           />
@@ -86,12 +87,11 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/appointments"
             element={
               <ProtectedRoute>
-                <Appointments />
+                <SubscriptionGate><Appointments /></SubscriptionGate>
               </ProtectedRoute>
             }
           />
@@ -99,7 +99,7 @@ export default function App() {
             path="/history"
             element={
               <ProtectedRoute>
-                <History />
+                <SubscriptionGate><History /></SubscriptionGate>
               </ProtectedRoute>
             }
           />
