@@ -18,6 +18,8 @@ import Privacidad from '@/pages/legal/Privacidad';
 import Terminos from '@/pages/legal/Terminos';
 import Cookies from '@/pages/legal/Cookies';
 import AvisoLegal from '@/pages/legal/AvisoLegal';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 
 export default function App() {
   return (
@@ -28,6 +30,8 @@ export default function App() {
           {/* Públicas */}
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/portal/:token" element={<PortalView />} />
           <Route path="/invite/:token" element={<AcceptInvite />} />
 
