@@ -41,7 +41,10 @@ Deno.serve(async (req) => {
         periodEnd = new Date(sub.current_period_end * 1000).toISOString();
       }
 
+      const plan = session.metadata?.plan ?? 'profesional';
+
       await supabase.from('organizations').update({
+        plan,
         subscription_status: 'active',
         stripe_subscription_id: session.subscription as string,
         subscription_ends_at: periodEnd,

@@ -1,12 +1,29 @@
-// Supabase Edge Function — Crea una sesión de checkout de Stripe
 // supabase functions deploy create-checkout-session
-// Variables: STRIPE_SECRET_KEY, STRIPE_PRICE_ID_MONTHLY, STRIPE_PRICE_ID_ANNUAL,
-//            APP_URL, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-// (STRIPE_PRICE_ID como fallback si no hay variantes)
+// Variables de entorno en Supabase → Edge Functions → Secrets:
+//
+//   STRIPE_SECRET_KEY                   sk_live_xxx
+//   APP_URL                             https://tu-dominio.com
+//   SUPABASE_URL                        (automática)
+//   SUPABASE_SERVICE_ROLE_KEY           (automática)
+//
+//   STRIPE_PRICE_BASICO_MONTHLY         price_xxx   (19€/mes)
+//   STRIPE_PRICE_BASICO_ANNUAL          price_xxx   (159€/año)
+//   STRIPE_PRICE_PROFESIONAL_MONTHLY    price_xxx   (39€/mes)
+//   STRIPE_PRICE_PROFESIONAL_ANNUAL     price_xxx   (329€/año)
+//   STRIPE_PRICE_PRO_MONTHLY            price_xxx   (69€/mes)
+//   STRIPE_PRICE_PRO_ANNUAL             price_xxx   (589€/año)
+
 import Stripe from 'https://esm.sh/stripe@14?target=deno';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, { apiVersion: '2024-06-20' });
+
+// Mapa plan → env var del Price ID
+const PRICE_ENV: Record<string, Record<string, string>> = {
+  basico:       { month: 'STRIPE_PRICE_BASICO_MONTHLY',       year: 'STRIPE_PRICE_BASICO_ANNUAL' },
+  profesional:  { month: 'STRIPE_PRICE_PROFESIONAL_MONTHLY',  year: 'STRIPE_PRICE_PROFESIONAL_ANNUAL' },
+  pro:          { month: 'STRIPE_PRICE_PRO_MONTHLY',          year: 'STRIPE_PRICE_PRO_ANNUAL' },
+};
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
@@ -16,10 +33,18 @@ Deno.serve(async (req) => {
     if (!authHeader) return new Response('Falta autenticación', { status: 401 });
 
     const body = await req.json().catch(() => ({}));
-    const interval: string = body.interval === 'year' ? 'year' : 'month';
-    const priceId = interval === 'year'
-      ? (Deno.env.get('STRIPE_PRICE_ID_ANNUAL') ?? Deno.env.get('STRIPE_PRICE_ID')!)
-      : (Deno.env.get('STRIPE_PRICE_ID_MONTHLY') ?? Deno.env.get('STRIPE_PRICE_ID')!);
+    const interval: 'month' | 'year' = body.interval === 'year' ? 'year' : 'month';
+    const plan: string = ['basico', 'profesional', 'pro'].includes(body.plan) ? body.plan : 'profesional';
+
+    const priceEnvKey = PRICE_ENV[plan][interval];
+    const priceId = Deno.env.get(priceEnvKey);
+
+    if (!priceId) {
+      return new Response(
+        JSON.stringify({ error: `Precio no configurado: ${priceEnvKey}` }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -46,10 +71,12 @@ Deno.serve(async (req) => {
 
     if (!org) return new Response('Organización no encontrada', { status: 404 });
 
+    // Crear o reutilizar cliente de Stripe
     let customerId = org.stripe_customer_id as string | null;
     if (!customerId) {
       const customer = await stripe.customers.create({
         name: org.name,
+        email: userData.user.email,
         metadata: { organization_id: org.id },
       });
       customerId = customer.id;
@@ -61,14 +88,25 @@ Deno.serve(async (req) => {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${Deno.env.get('APP_URL')}/dashboard?checkout=success`,
-      cancel_url: `${Deno.env.get('APP_URL')}/dashboard?checkout=cancelled`,
-      metadata: { organization_id: org.id },
+      cancel_url:  `${Deno.env.get('APP_URL')}/settings?checkout=cancelled`,
+      // Guardamos el plan en metadata para que el webhook lo lea
+      metadata: {
+        organization_id: org.id,
+        plan,
+        interval,
+      },
+      subscription_data: {
+        metadata: { organization_id: org.id, plan },
+      },
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500 });
+    console.error(err);
+    return new Response(JSON.stringify({ error: (err as Error).message }), {
+      status: 500, headers: { 'Content-Type': 'application/json' },
+    });
   }
 });
