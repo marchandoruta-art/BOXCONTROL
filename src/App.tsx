@@ -21,6 +21,7 @@ import Cookies from '@/pages/legal/Cookies';
 import AvisoLegal from '@/pages/legal/AvisoLegal';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
+import PlatformAdmin from '@/pages/PlatformAdmin';
 
 export default function App() {
   return (
@@ -103,6 +104,9 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Panel propietario plataforma */}
+          <Route path="/owner" element={<ProtectedRoute requireOrg={false}><PlatformAdmin /></ProtectedRoute>} />
 
           {/* Páginas legales */}
           <Route path="/legal/privacidad" element={<Privacidad />} />
