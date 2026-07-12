@@ -55,8 +55,71 @@ export const PRIORITY_LABELS: Record<VehiclePriority, string> = {
 export const ROLE_LABELS: Record<UserRole, string> = {
   mecanico: 'Mecánico',
   chapista: 'Chapista',
-  oficina: 'Oficina',
-  admin: 'Admin',
+  oficina: 'Administración',
+  admin: 'Administrador',
+};
+
+// Permisos por rol
+export const ROLE_PERMISSIONS: Record<UserRole, {
+  canDeleteVehicle: boolean;
+  canDeleteOrg: boolean;
+  canManageBilling: boolean;
+  canInviteMembers: boolean;
+  canChangeRoles: boolean;
+  canRemoveMembers: boolean;
+  canCreateVehicle: boolean;
+  canEditVehicleStatus: boolean;
+  canManageWorkOrders: boolean;
+  canViewAnalytics: boolean;
+}> = {
+  admin: {
+    canDeleteVehicle: true,
+    canDeleteOrg: true,
+    canManageBilling: true,
+    canInviteMembers: true,
+    canChangeRoles: true,
+    canRemoveMembers: true,
+    canCreateVehicle: true,
+    canEditVehicleStatus: true,
+    canManageWorkOrders: true,
+    canViewAnalytics: true,
+  },
+  oficina: {
+    canDeleteVehicle: false,
+    canDeleteOrg: false,
+    canManageBilling: false,
+    canInviteMembers: false,
+    canChangeRoles: false,
+    canRemoveMembers: false,
+    canCreateVehicle: true,
+    canEditVehicleStatus: true,
+    canManageWorkOrders: true,
+    canViewAnalytics: true,
+  },
+  mecanico: {
+    canDeleteVehicle: false,
+    canDeleteOrg: false,
+    canManageBilling: false,
+    canInviteMembers: false,
+    canChangeRoles: false,
+    canRemoveMembers: false,
+    canCreateVehicle: false,
+    canEditVehicleStatus: true,
+    canManageWorkOrders: false,
+    canViewAnalytics: false,
+  },
+  chapista: {
+    canDeleteVehicle: false,
+    canDeleteOrg: false,
+    canManageBilling: false,
+    canInviteMembers: false,
+    canChangeRoles: false,
+    canRemoveMembers: false,
+    canCreateVehicle: false,
+    canEditVehicleStatus: true,
+    canManageWorkOrders: false,
+    canViewAnalytics: false,
+  },
 };
 
 export interface Organization {

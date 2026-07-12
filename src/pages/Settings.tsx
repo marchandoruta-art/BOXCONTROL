@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { AppShell } from '@/components/layout/AppShell';
 import { SubscriptionBanner } from '@/components/layout/SubscriptionBanner';
@@ -15,6 +16,7 @@ import { toast } from 'sonner';
 export default function Settings() {
   const { organization, refresh } = useOrganization();
   const { user, signOut } = useAuth();
+  const { can } = useRole();
   const navigate = useNavigate();
   const [name, setName] = useState(organization?.name ?? '');
   const [savingName, setSavingName] = useState(false);
@@ -173,8 +175,8 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Suscripción */}
-        <Card>
+        {/* Suscripción — solo admin */}
+        {can('canManageBilling') && <Card>
           <CardHeader><CardTitle className="text-base">Membresía</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             {/* Estado */}
@@ -226,10 +228,10 @@ export default function Settings() {
               </Button>
             )}
           </CardContent>
-        </Card>
+        </Card>}
 
-        {/* Zona de peligro */}
-        <Card className="border-destructive/40">
+        {/* Zona de peligro — solo admin */}
+        {can('canDeleteOrg') && <Card className="border-destructive/40">
           <CardHeader>
             <CardTitle className="text-base text-destructive flex items-center gap-2">
               <ShieldAlert className="h-4 w-4" /> Zona de peligro
@@ -289,7 +291,7 @@ export default function Settings() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </Card>}
       </div>
     </AppShell>
   );
